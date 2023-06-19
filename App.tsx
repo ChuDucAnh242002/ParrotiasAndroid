@@ -5,114 +5,58 @@
  * @format
  */
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+import { View, Platform, Alert, TouchableOpacity } from 'react-native';
+import { WebView } from 'react-native-webview';
+import RNFS from 'react-native-fs';
+import { LongPressGestureHandler, State } from 'react-native-gesture-handler';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
-
-function Section({children, title}: SectionProps): JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
+const handleLongPress = async () => {
+  try {
+    const response = await webViewRef.current.injectJavaScript(`
+      document.addEventListener('message', function(event) {
+        window.ReactNativeWebView.postMessage(event.target.src);
+      });
+    `);
+    const imageUrl = response[0];
+    if (imageUrl) {
+      const downloadDest = `${RNFS.DocumentDirectoryPath}/image.jpg`;
+      const options = {
+        fromUrl: imageUrl,
+        toFile: downloadDest,
+      };
+      const { jobId } = RNFS.downloadFile(options);
+      jobId.then(() => {
+        Alert.alert('Image saved successfully.');
+      }).catch((error) => {
+        Alert.alert('Failed to save image.');
+      });
+    }
+  } catch (error) {
+    Alert.alert('Error occurred while saving image.');
+  }
+};
 
 function App(): JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
+        <View style={{ flex: 1 }}>
+          <WebView
+            source={{ uri: 'https://www.parrotias.com/' }}
+            style={{ flex: 1 }} />
         </View>
-      </ScrollView>
-    </SafeAreaView>
+
+//         <LongPressGestureHandler onHandlerStateChange={({ nativeEvent }) => {
+//             if (nativeEvent.state === State.ACTIVE) {
+//                 handleLongPress();
+//             }
+//         }}>
+//             <View style= {{ flex: 1 }}>
+//                 <WebView
+//                     source={{ uri: 'https://www.parrotias.com/' }}
+//                     style={{ flex: 1 }}/>
+//             </View>
+//         </LongPressGestureHandler>
   );
 }
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
 
 export default App;
