@@ -7,11 +7,11 @@
 #define TIMEOUT_SECONDS 600
 #define TEXT_TO_LOOK_FOR @"Welcome to React"
 
-@interface ParrotiasAndroidTests : XCTestCase
+@interface ParrotiasTests : XCTestCase
 
 @end
 
-@implementation ParrotiasAndroidTests
+@implementation ParrotiasTests
 
 - (BOOL)findSubviewInView:(UIView *)view matching:(BOOL (^)(UIView *view))test
 {

@@ -1,4 +1,4 @@
-package com.parrotiasandroid;
+package com.parrotias;
 
 import android.app.Application;
 import com.facebook.react.PackageList;
@@ -59,12 +59,4 @@ public class MainApplication extends Application implements ReactApplication {
     }
     ReactNativeFlipper.initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
   }
-
-//    @Override
-//    protected List<ReactPackage> getPackages() {
-//        return Arrays.<ReactPackage>asList(
-//                new MainReactPackage(), // <---- add comma
-//                new RNFSPackage() // <---------- add package
-//        );
-//    }
 }
