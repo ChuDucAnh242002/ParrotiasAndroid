@@ -6,7 +6,7 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Text, View, StyleSheet, Animated } from 'react-native';
+import { View, StyleSheet, StatusBar } from 'react-native';
 import { WebView } from 'react-native-webview';
 import * as Progress from 'react-native-progress';
 
@@ -31,8 +31,12 @@ const App = () => {
 
     return (
       <View style={styles.container}>
+        <StatusBar
+            backgroundColor="white"
+            barStyle="dark-content"
+        />
         {isLoading && (
-            <Progress.Bar progress={progress} width={320}/>
+            <Progress.Bar progress={progress} width={null} borderRadius={0}/>
         )}
 
         <WebView
