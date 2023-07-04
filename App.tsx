@@ -36,7 +36,13 @@ const App = () => {
             barStyle="dark-content"
         />
         {isLoading && (
-            <Progress.Bar progress={progress} width={null} borderRadius={0}/>
+            <Progress.Bar
+                progress={progress}
+                width={null}
+                borderRadius={0}
+                height={2}
+                color={'rgb(43, 55, 84)'}
+            />
         )}
 
         <WebView
