@@ -6,13 +6,16 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react';
-import { View, StyleSheet, StatusBar } from 'react-native';
+import { View, StyleSheet, StatusBar, Text, Image, ScrollView, RefreshControl } from 'react-native';
 import { WebView } from 'react-native-webview';
 import * as Progress from 'react-native-progress';
+import NetInfo from "@react-native-community/netinfo";
 
 const App = () => {
   const [isLoading, setIsLoading] = useState(true);
     const [progress, setProgress] = useState(0);
+    const [isConnected, setIsConnected] = useState(true);
+    const webViewRef = useRef(null);
 
     const handleLoadStart = () => {
       setIsLoading(true);
@@ -28,6 +31,35 @@ const App = () => {
       const newProgress = nativeEvent.progress * 100;
       setProgress(newProgress);
     };
+    const handleReload = () => {
+        if(isConnected){
+            webviewRef.reload();
+        }
+    }
+
+    const handleScroll = (event) => {
+        const offsetY = event.nativeEvent.contentOffset.y;
+        setScrollOffset(offsetY);
+      };
+
+      const handleScrollUp = () => {
+        if (scrollOffset === 0) {
+          webViewRef.current.reload();
+        }
+      };
+
+    // Subscribe
+    useEffect(() => {
+        const unsubscribe = NetInfo.addEventListener((state) => {
+          setIsConnected(state.isConnected);
+        });
+
+        return () => {
+          unsubscribe();
+        };
+      }, []);
+
+
 
     return (
       <View style={styles.container}>
@@ -35,37 +67,65 @@ const App = () => {
             backgroundColor="white"
             barStyle="dark-content"
         />
+
         {isLoading && (
             <Progress.Bar
-                progress={progress}
-                width={null}
-                borderRadius={0}
-                height={2}
-                color={'rgb(43, 55, 84)'}
-            />
+            progress={progress}
+            width={null}
+            borderRadius={0}
+            height={2}
+            color={'rgb(43, 55, 84)'}
+        />
         )}
 
+        {!isConnected && (
+            <View style={styles.content}>
+                <Image style={styles.image} source={require('./img/No_wifi.png')} />
+            </View>
+        )}
+
+        {isConnected && (
+        <ScrollView
+            contentContainerStyle={{ flexGrow: 1 }}
+            refreshControl={
+                <RefreshControl
+                    onRefresh = {() => webViewRef.current.reload()}
+                    refreshing = {false}
+                />
+            }
+        >
         <WebView
-          source={{ uri: 'https://www.parrotias.com/' }}
-          style={styles.webView}
-          onLoadStart={handleLoadStart}
-          onLoadEnd={handleLoadEnd}
-          onLoadProgress={handleLoadProgress}
+            ref={webViewRef}
+            source={{ uri: 'https://www.parrotias.com/' }}
+            style={styles.webView}
+            onLoadStart={handleLoadStart}
+            onLoadEnd={handleLoadEnd}
+            onLoadProgress={handleLoadProgress}
+            onError={handleReload}
         />
+        </ScrollView>
+        )}
       </View>
     );
 }
-
-
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  content: {
+    flex: 3,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   webView: {
     flex: 1,
     width: '100%',
   },
+  image: {
+    width: '70%',
+    height: '70%',
+  }
 });
 
 export default App;
