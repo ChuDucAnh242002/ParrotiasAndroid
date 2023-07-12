@@ -15,7 +15,11 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(true);
     const [progress, setProgress] = useState(0);
     const [isConnected, setIsConnected] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
     const webViewRef = useRef(null);
+    const scrollViewRef = useRef(null);
+    const scrollThreshold = 10;
+      let scrollY = 0;
 
     const handleLoadStart = () => {
       setIsLoading(true);
@@ -33,19 +37,16 @@ const App = () => {
     };
     const handleReload = () => {
         if(isConnected){
-            webviewRef.reload();
+            webViewRef.reload();
         }
     }
 
-    const handleScroll = (event) => {
-        const offsetY = event.nativeEvent.contentOffset.y;
-        setScrollOffset(offsetY);
-      };
-
-      const handleScrollUp = () => {
-        if (scrollOffset === 0) {
-          webViewRef.current.reload();
+    const handleScroll = (syntheticEvent) => {
+        const { contentOffset } = syntheticEvent.nativeEvent;
+        if(contentOffset.y <= scrollThreshold && contentOffset.y <= scrollY.y  && scrollY.y !== 0){
+            webViewRef.current.reload();
         }
+        scrollY = contentOffset
       };
 
     // Subscribe
@@ -85,15 +86,6 @@ const App = () => {
         )}
 
         {isConnected && (
-        <ScrollView
-            contentContainerStyle={{ flexGrow: 1 }}
-            refreshControl={
-                <RefreshControl
-                    onRefresh = {() => webViewRef.current.reload()}
-                    refreshing = {false}
-                />
-            }
-        >
         <WebView
             ref={webViewRef}
             source={{ uri: 'https://www.parrotias.com/' }}
@@ -102,8 +94,8 @@ const App = () => {
             onLoadEnd={handleLoadEnd}
             onLoadProgress={handleLoadProgress}
             onError={handleReload}
+            onScroll={handleScroll}
         />
-        </ScrollView>
         )}
       </View>
     );
@@ -121,6 +113,7 @@ const styles = StyleSheet.create({
   webView: {
     flex: 1,
     width: '100%',
+    height: '100%',
   },
   image: {
     width: '70%',
